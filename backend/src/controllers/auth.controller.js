@@ -1,3 +1,4 @@
+import cloudinary from "../lib/cloudnary.js";
 import User from "../model/User.model.js"
 import { AsyncHandeler } from "../utils/AsyncHandeler.js"
 
@@ -87,7 +88,7 @@ export const login = AsyncHandeler(async (req, res) => {
             success: false
         })
     }
-    const ispasswordCorrect=await User.ispasswordCorrect(password)
+    const ispasswordCorrect=await user.ispasswordCorrect(password)
     if(!ispasswordCorrect){
         res.sta(404).json({
             message:"wrong password ",
@@ -134,4 +135,34 @@ export const logout=AsyncHandeler(async(req,res)=>{
         success:false
     })
 
+})
+
+export const updateprofilePic=AsyncHandeler(async(req,res)=>{
+    try {
+        const {profilepic}=req.body
+        if(!profilepic){
+            return res.status(400).json({
+                message:"please select an image",
+                success:false
+            })
+        }
+        const user=await User.findById(req.user._id)
+        if(!user){
+            return res.status(404).json({
+                message:"user not found or not login ",
+                success:false
+            })
+        }
+        const uploadResponse=await cloudinary.uploader.upload(profilepic)
+        user.profilepic=uploadResponse.secure_url
+        await user.save()
+        res.status(200).json({
+            message:"profile pic uploaded succesfulluy",
+            success:true,
+            profilepic:user.profilepic
+        })
+    } catch (error) {
+        
+    }
+    
 })
