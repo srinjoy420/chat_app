@@ -55,6 +55,7 @@ export const signup = AsyncHandeler(async (req, res) => {
     const cookeOptions = {
         httpOnly: true,
         secure: true,
+       
         maxAge: 24 * 60 * 60 * 1000,
     }
     res.cookie("acessToken", acessToken, cookeOptions)
@@ -65,7 +66,7 @@ export const signup = AsyncHandeler(async (req, res) => {
         acessToken,
         refreshToken,
         user: {
-             id: user._id,
+            id: user._id,
             username: user.username,
             email: user.email,
             profilepic: user.profilepic
@@ -88,13 +89,13 @@ export const login = AsyncHandeler(async (req, res) => {
             success: false
         })
     }
-    const ispasswordCorrect=await user.ispasswordCorrect(password)
-    if(!ispasswordCorrect){
-        res.sta(404).json({
-            message:"wrong password ",
-            success:false
+    const ispasswordCorrect = await user.ispasswordCorrect(password)
+    if (!ispasswordCorrect) {
+        res.status(404).json({
+            message: "wrong password ",
+            success: false
         })
-        
+
     }
     const { refreshToken, acessToken } = await getAccesstokenrefreshToken(user._id)
     user.refreshToken = refreshToken
@@ -102,6 +103,7 @@ export const login = AsyncHandeler(async (req, res) => {
     const cookeOptions = {
         httpOnly: true,
         secure: true,
+       
         maxAge: 24 * 60 * 60 * 1000,
     }
     res.cookie("acessToken", acessToken, cookeOptions)
@@ -122,47 +124,62 @@ export const login = AsyncHandeler(async (req, res) => {
     })
 
 })
-export const logout=AsyncHandeler(async(req,res)=>{
+export const logout = AsyncHandeler(async (req, res) => {
     const cookeOptions = {
         httpOnly: true,
-        secure: false,
-         expires: new Date(0),
+        secure: true,
+       
+        maxAge: 24 * 60 * 60 * 1000,
     }
     res.cookie("acessToken", "", cookeOptions)
     res.cookie("refreshToken", "", cookeOptions)
     res.status(200).json({
-        message:"succesfully loggedout",
-        success:false
+        message: "succesfully loggedout",
+        success: true
     })
 
 })
 
-export const updateprofilePic=AsyncHandeler(async(req,res)=>{
+export const updateprofilePic = AsyncHandeler(async (req, res) => {
     try {
-        const {profilepic}=req.body
-        if(!profilepic){
+        const { profilepic } = req.body
+        if (!profilepic) {
             return res.status(400).json({
-                message:"please select an image",
-                success:false
+                message: "please select an image",
+                success: false
             })
         }
-        const user=await User.findById(req.user._id)
-        if(!user){
+        const user = await User.findById(req.user._id)
+        if (!user) {
             return res.status(404).json({
-                message:"user not found or not login ",
-                success:false
+                message: "user not found or not login ",
+                success: false
             })
         }
-        const uploadResponse=await cloudinary.uploader.upload(profilepic)
-        user.profilepic=uploadResponse.secure_url
+        const uploadResponse = await cloudinary.uploader.upload(profilepic)
+        user.profilepic = uploadResponse.secure_url
         await user.save()
         res.status(200).json({
-            message:"profile pic uploaded succesfulluy",
-            success:true,
-            profilepic:user.profilepic
+            message: "profile pic uploaded succesfulluy",
+            success: true,
+            profilepic: user.profilepic
         })
     } catch (error) {
-        
+
     }
-    
+
 })
+
+export const checkUser = (req, res) => {
+    try {
+        res.status(200).json(req.user)
+    } catch (error) {
+        console.log("error to fetch user", error);
+        res.status(400).json({
+            message: "profile fatching problem",
+            success: false
+        })
+
+
+    }
+}

@@ -4,6 +4,7 @@ import ConnectDB from "./db/indexdb.js"
 import cookieparser from "cookie-parser"
 import authUser from "./routes/auth.routes.js"
 import messageRouter from "./routes/message.routes.js"
+import cors from "cors"
 
 
 
@@ -12,6 +13,19 @@ const app=express()
 app.use(cookieparser())
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "DELETE", "OPTIONS", "PUT"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    exposedHeaders: ["Set-Cookie", "*"],
+  })
+);
 app.use("/api/v1/auth",authUser)
 app.use("/api/v1/message",messageRouter)
 const port=process.env.PORT||3000

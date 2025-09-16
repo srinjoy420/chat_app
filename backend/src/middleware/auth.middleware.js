@@ -15,6 +15,7 @@ export const isloggedin=async(req,res,next)=>{
      const decode=jwt.verify(token,process.env.TOKEN_SECRET)
      console.log("decoded data",decode);
      req.user=decode
+     return next()
      
    } catch (error) {
      console.log("auth middlewere failure");
@@ -25,6 +26,6 @@ export const isloggedin=async(req,res,next)=>{
 
     
    }
-   next()
+   
     
 }
