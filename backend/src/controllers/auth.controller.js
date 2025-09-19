@@ -56,7 +56,7 @@ export const signup = AsyncHandeler(async (req, res) => {
         httpOnly: true,
         secure: true,
        
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 7*24 * 60 * 60 * 1000,
     }
     res.cookie("acessToken", acessToken, cookeOptions)
     res.cookie("refreshToken", refreshToken, cookeOptions)
@@ -104,7 +104,7 @@ export const login = AsyncHandeler(async (req, res) => {
         httpOnly: true,
         secure: true,
        
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 7*24 * 60 * 60 * 1000,
     }
     res.cookie("acessToken", acessToken, cookeOptions)
     res.cookie("refreshToken", refreshToken, cookeOptions)
@@ -129,7 +129,7 @@ export const logout = AsyncHandeler(async (req, res) => {
         httpOnly: true,
         secure: true,
        
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 7*24 * 60 * 60 * 1000,
     }
     res.cookie("acessToken", "", cookeOptions)
     res.cookie("refreshToken", "", cookeOptions)
