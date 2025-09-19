@@ -1,6 +1,9 @@
+import { sendWelcomeEmail } from "../email/emailHandeler.js";
 import cloudinary from "../lib/cloudnary.js";
 import User from "../model/User.model.js"
 import { AsyncHandeler } from "../utils/AsyncHandeler.js"
+import dotenv from "dotenv"
+dotenv.config()
 
 
 // No AsyncHandeler here!
@@ -49,14 +52,15 @@ export const signup = AsyncHandeler(async (req, res) => {
         password,
         profilepic
     })
+   await sendWelcomeEmail(user.email,user.username,process.env.CLIENT_URL)
     const { refreshToken, acessToken } = await getAccesstokenrefreshToken(user._id)
     user.refreshToken = refreshToken
     await user.save()
     const cookeOptions = {
         httpOnly: true,
-        secure: true,
+        secure:process.env.NODE_ENV === "production",
        
-        maxAge: 7*24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
     }
     res.cookie("acessToken", acessToken, cookeOptions)
     res.cookie("refreshToken", refreshToken, cookeOptions)
@@ -102,9 +106,9 @@ export const login = AsyncHandeler(async (req, res) => {
     await user.save()
     const cookeOptions = {
         httpOnly: true,
-        secure: true,
+        secure:process.env.NODE_ENV === "production",
        
-        maxAge: 7*24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
     }
     res.cookie("acessToken", acessToken, cookeOptions)
     res.cookie("refreshToken", refreshToken, cookeOptions)
@@ -127,7 +131,7 @@ export const login = AsyncHandeler(async (req, res) => {
 export const logout = AsyncHandeler(async (req, res) => {
     const cookeOptions = {
         httpOnly: true,
-        secure: true,
+      secure:process.env.NODE_ENV === "production",
        
         maxAge: 7*24 * 60 * 60 * 1000,
     }
@@ -183,3 +187,28 @@ export const checkUser = (req, res) => {
 
     }
 }
+
+export const deleteaccount=AsyncHandeler(async(req,res)=>{
+    const userId=req.user._id;
+    const user=await User.findByIdAndDelete(userId)
+    if(!user){
+        return res.status(404).json({
+            message:"cant find the user",
+            success:false
+        })
+    }
+    res.status(200).json({
+        message:"succesfully deleted account",
+        success:true
+    })
+})
+
+export const deleteallaccount=AsyncHandeler(async(req,res)=>{
+    const result=await User.deleteMany({})
+    res.status(200).json({
+        message:"delete all users",
+        success:true,
+        deeleteCount:result.deletedCount
+
+    })
+})
