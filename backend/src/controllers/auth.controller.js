@@ -1,4 +1,4 @@
-import { sendWelcomeEmail } from "../email/emailHandeler.js";
+// import { sendWelcomeEmail } from "../email/emailHandeler.js";
 import cloudinary from "../lib/cloudnary.js";
 
 import User from "../model/User.model.js"
@@ -53,7 +53,7 @@ export const signup = AsyncHandeler(async (req, res) => {
         password,
         profilepic
     })
-   await sendWelcomeEmail(user.email,user.username,process.env.CLIENT_URL)
+//    await sendWelcomeEmail(user.email,user.username,process.env.CLIENT_URL)
     const { refreshToken, acessToken } = await getAccesstokenrefreshToken(user._id)
     user.refreshToken = refreshToken
     await user.save()
