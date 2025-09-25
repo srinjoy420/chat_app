@@ -1,5 +1,6 @@
 import { sendWelcomeEmail } from "../email/emailHandeler.js";
 import cloudinary from "../lib/cloudnary.js";
+
 import User from "../model/User.model.js"
 import { AsyncHandeler } from "../utils/AsyncHandeler.js"
 import dotenv from "dotenv"
@@ -58,7 +59,7 @@ export const signup = AsyncHandeler(async (req, res) => {
     await user.save()
     const cookeOptions = {
         httpOnly: true,
-        secure:process.env.NODE_ENV === "production",
+        secure:true,
        
         maxAge: 7 * 24 * 60 * 60 * 1000,
     }
@@ -106,7 +107,7 @@ export const login = AsyncHandeler(async (req, res) => {
     await user.save()
     const cookeOptions = {
         httpOnly: true,
-        secure:process.env.NODE_ENV === "production",
+        secure:true,
        
         maxAge: 7 * 24 * 60 * 60 * 1000,
     }
@@ -131,7 +132,7 @@ export const login = AsyncHandeler(async (req, res) => {
 export const logout = AsyncHandeler(async (req, res) => {
     const cookeOptions = {
         httpOnly: true,
-      secure:process.env.NODE_ENV === "production",
+      secure:true,
        
         maxAge: 7*24 * 60 * 60 * 1000,
     }
@@ -146,7 +147,7 @@ export const logout = AsyncHandeler(async (req, res) => {
 
 export const updateprofilePic = AsyncHandeler(async (req, res) => {
     try {
-        const { profilepic } = req.body
+        const { profilepic  } = req.body
         if (!profilepic) {
             return res.status(400).json({
                 message: "please select an image",
@@ -174,19 +175,28 @@ export const updateprofilePic = AsyncHandeler(async (req, res) => {
 
 })
 
-export const checkUser = (req, res) => {
-    try {
-        res.status(200).json(req.user)
-    } catch (error) {
-        console.log("error to fetch user", error);
-        res.status(400).json({
-            message: "profile fatching problem",
-            success: false
+export const checkUser = AsyncHandeler(async(req,res)=>{
+    const userId=req.user._id
+    const user=await User.findById(userId)
+    if(!user){
+        return res.status(404).json({
+            message:"user is not exist or logout",
+            success:false
         })
-
-
     }
-}
+    res.status(200).json({
+        message:"user find succesfully",
+        success:true,
+        user:{
+            id:user._id,
+            username:user.username,
+            email:user.email,
+            profilepic:user.profilepic
+
+
+        }
+    })
+})
 
 export const deleteaccount=AsyncHandeler(async(req,res)=>{
     const userId=req.user._id;
