@@ -1,8 +1,14 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAuthstore } from '../store/useauthstore.js'
 
 const SingupPage = () => {
-    const {authUser,isLoading,Login}=useAuthstore()
+  const[formData,setFormData]=useState({username:"",email:"",password:""})
+  const {singup,issSingingUp}=useAuthstore()
+
+  const handelSubmit=(e)=>{
+
+  }
+   
   return (
     <div>
       <h1 className="text-white text-3xl">efwefe</h1>

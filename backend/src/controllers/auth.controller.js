@@ -53,16 +53,17 @@ export const signup = AsyncHandeler(async (req, res) => {
         password,
         profilepic
     })
-//    await sendWelcomeEmail(user.email,user.username,process.env.CLIENT_URL)
+    //    await sendWelcomeEmail(user.email,user.username,process.env.CLIENT_URL)
     const { refreshToken, acessToken } = await getAccesstokenrefreshToken(user._id)
     user.refreshToken = refreshToken
     await user.save()
     const cookeOptions = {
         httpOnly: true,
-        secure:true,
-       
+        secure: false,      // keep false locally, true in production with https
+        sameSite: "None",   // important for cross-site cookies
         maxAge: 7 * 24 * 60 * 60 * 1000,
     }
+
     res.cookie("acessToken", acessToken, cookeOptions)
     res.cookie("refreshToken", refreshToken, cookeOptions)
     res.status(200).json({
@@ -107,10 +108,11 @@ export const login = AsyncHandeler(async (req, res) => {
     await user.save()
     const cookeOptions = {
         httpOnly: true,
-        secure:true,
-       
+        secure: false,      // keep false locally, true in production with https
+        sameSite: "None",   // important for cross-site cookies
         maxAge: 7 * 24 * 60 * 60 * 1000,
     }
+
     res.cookie("acessToken", acessToken, cookeOptions)
     res.cookie("refreshToken", refreshToken, cookeOptions)
     res.status(200).json({
@@ -132,10 +134,11 @@ export const login = AsyncHandeler(async (req, res) => {
 export const logout = AsyncHandeler(async (req, res) => {
     const cookeOptions = {
         httpOnly: true,
-      secure:true,
-       
-        maxAge: 7*24 * 60 * 60 * 1000,
+        secure: false,      // keep false locally, true in production with https
+        sameSite: "None",   // important for cross-site cookies
+        maxAge: 7 * 24 * 60 * 60 * 1000,
     }
+
     res.cookie("acessToken", "", cookeOptions)
     res.cookie("refreshToken", "", cookeOptions)
     res.status(200).json({
@@ -147,7 +150,7 @@ export const logout = AsyncHandeler(async (req, res) => {
 
 export const updateprofilePic = AsyncHandeler(async (req, res) => {
     try {
-        const { profilepic  } = req.body
+        const { profilepic } = req.body
         if (!profilepic) {
             return res.status(400).json({
                 message: "please select an image",
@@ -175,50 +178,50 @@ export const updateprofilePic = AsyncHandeler(async (req, res) => {
 
 })
 
-export const checkUser = AsyncHandeler(async(req,res)=>{
-    const userId=req.user._id
-    const user=await User.findById(userId)
-    if(!user){
+export const checkUser = AsyncHandeler(async (req, res) => {
+    const userId = req.user._id
+    const user = await User.findById(userId)
+    if (!user) {
         return res.status(404).json({
-            message:"user is not exist or logout",
-            success:false
+            message: "user is not exist or logout",
+            success: false
         })
     }
     res.status(200).json({
-        message:"user find succesfully",
-        success:true,
-        user:{
-            id:user._id,
-            username:user.username,
-            email:user.email,
-            profilepic:user.profilepic
+        message: "user find succesfully",
+        success: true,
+        user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            profilepic: user.profilepic
 
 
         }
     })
 })
 
-export const deleteaccount=AsyncHandeler(async(req,res)=>{
-    const userId=req.user._id;
-    const user=await User.findByIdAndDelete(userId)
-    if(!user){
+export const deleteaccount = AsyncHandeler(async (req, res) => {
+    const userId = req.user._id;
+    const user = await User.findByIdAndDelete(userId)
+    if (!user) {
         return res.status(404).json({
-            message:"cant find the user",
-            success:false
+            message: "cant find the user",
+            success: false
         })
     }
     res.status(200).json({
-        message:"succesfully deleted account",
-        success:true
+        message: "succesfully deleted account",
+        success: true
     })
 })
 
-export const deleteallaccount=AsyncHandeler(async(req,res)=>{
-    const result=await User.deleteMany({})
+export const deleteallaccount = AsyncHandeler(async (req, res) => {
+    const result = await User.deleteMany({})
     res.status(200).json({
-        message:"delete all users",
-        success:true,
-        deeleteCount:result.deletedCount
+        message: "delete all users",
+        success: true,
+        deeleteCount: result.deletedCount
 
     })
 })

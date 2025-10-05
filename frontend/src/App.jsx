@@ -1,15 +1,24 @@
-import React from 'react'
-import { Route, Routes } from 'react-router'
+import React, { useEffect } from 'react'
+import { Navigate, Route, Routes } from 'react-router'
 import Chatpage from './pages/Chatpage'
 import Loginpage from './pages/Loginpage'
 import SingupPage from './pages/SingupPage'
 import { useAuthstore } from './store/useauthstore.js'
+import PageLoader from './components/PageLoader.jsx'
 
 
 const App = () => {
-  const { authUser, isLoading, Login,isLoggedIn } = useAuthstore()
+  const { authUser,isCheackingAuth,checkAuth} = useAuthstore()
+  useEffect(()=>{
+    checkAuth()
+
+  },[checkAuth])
+  console.log(authUser);
+
+  if(isCheackingAuth) return <PageLoader/>
+  
   // console.log("authuser", authUser);
-   console.log("isloggedin", isLoggedIn);
+  //  console.log("isloggedin", isLoggedIn);
 
 
   return (
@@ -19,10 +28,10 @@ const App = () => {
       <div className="absolute top-0 -left-4 size-96 bg-pink-500 opacity-20 blur-[100px] -z-10" />
       <div className="absolute bottom-0 -right-4 size-96 bg-cyan-500 opacity-20 blur-[100px] -z-10" />
 
-      <button onClick={Login}>Login</button>
+      
       <Routes>
-        <Route path='/' element={<Chatpage />} />
-        <Route path='/login' element={<Loginpage />} />
+        <Route path='/' element={authUser ? <Chatpage /> : <Navigate to={"/login"}/>} />
+        <Route path='/login' element={!authUser ? <Loginpage /> :<Navigate to={"/"}/>} />
         <Route path='/singup' element={<SingupPage />} />
 
 

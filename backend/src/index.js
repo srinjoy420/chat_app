@@ -28,11 +28,11 @@ app.get("/", (req, res) => {
 // cors setup
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend dev URL
+    origin: "http://localhost:5173",  // no trailing slash
     credentials: true,
     methods: ["GET", "POST", "DELETE", "OPTIONS", "PUT"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
-    exposedHeaders: ["Set-Cookie", "*"],
+    exposedHeaders: ["Set-Cookie"],
   })
 )
 
