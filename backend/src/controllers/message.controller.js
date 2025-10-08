@@ -75,7 +75,7 @@ export const SendMessage = AsyncHandeler(async (req, res) => {
 })
 export const getChatPartners = AsyncHandeler(async (req, res) => {
     const loggedinUserId = req.user._id
-    // find all the messages where the logged in user is sheller or reciver
+    // find all the messages where the logged in user is sender or reciver
     const messages = await Message.find({
         $or: [{ senderId: loggedinUserId }, { reciverId: loggedinUserId }]
     })
@@ -92,7 +92,8 @@ export const getChatPartners = AsyncHandeler(async (req, res) => {
     const chatpatners = await User.find({ _id: { $in: chatPartnerIds } }).select('-password')
     res.status(200).json({
         message: "fetch all chatpatners succesfully",
-        success: true
+        success: true,
+        chatpatners
     })
 
 })
