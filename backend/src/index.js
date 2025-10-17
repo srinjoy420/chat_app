@@ -14,6 +14,16 @@ import cors from "cors"
 dotenv.config()
 const app = express()
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",  // no trailing slash
+    credentials: true,
+    methods: ["GET", "POST", "DELETE", "OPTIONS", "PUT"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    exposedHeaders: ["Set-Cookie"],
+  })
+)
+
 // middlewares
 app.use(cookieParser())
 // payload to large error
@@ -26,15 +36,7 @@ app.get("/", (req, res) => {
 })
 
 // cors setup
-app.use(
-  cors({
-    origin: "http://localhost:5173",  // no trailing slash
-    credentials: true,
-    methods: ["GET", "POST", "DELETE", "OPTIONS", "PUT"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
-    exposedHeaders: ["Set-Cookie"],
-  })
-)
+
 
 // api routes
 app.use("/api/v1/auth", authUser)

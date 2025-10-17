@@ -1,21 +1,23 @@
 import React, { useEffect } from 'react'
-import { Navigate, Route, Routes } from 'react-router'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Chatpage from './pages/Chatpage'
 import Loginpage from './pages/Loginpage'
 import SingupPage from './pages/SingupPage'
 import { useAuthstore } from './store/useauthstore.js'
 import PageLoader from './components/PageLoader.jsx'
+import {Toaster} from "react-hot-toast"
 
 
 const App = () => {
-  const { authUser,isCheackingAuth,checkAuth} = useAuthstore()
-  useEffect(()=>{
+  const { authUser, isCheckingAuth, checkAuth } = useAuthstore()
+  
+  useEffect(() => {
     checkAuth()
+  }, [checkAuth])
+  
+  console.log("🔍 Auth user:", authUser);
 
-  },[checkAuth])
-  console.log(authUser);
-
-  if(isCheackingAuth) return <PageLoader/>
+  if (isCheckingAuth) return <PageLoader/>
   
   // console.log("authuser", authUser);
   //  console.log("isloggedin", isLoggedIn);
@@ -36,6 +38,7 @@ const App = () => {
 
 
       </Routes>
+      <Toaster/>
     </div>
   )
 }
