@@ -225,7 +225,7 @@ export const updateprofilePic = AsyncHandeler(async (req, res) => {
     user.profilepic = uploadResponse.secure_url;
     await user.save();
 
-    console.log("✅ Profile picture updated for user:", user._id);
+    console.log(" Profile picture updated for user:", user._id);
 
     res.status(200).json({
       message: "Profile picture updated successfully",
