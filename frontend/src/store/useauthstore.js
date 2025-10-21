@@ -81,6 +81,7 @@ export const useAuthstore = create((set, get) => ({
           authUser: res.data.user,
           error: null 
         });
+        toast.success("logged in succesfully")
         console.log("✅ User logged in successfully:", res.data.user.username);
         return { success: true, user: res.data.user };
       } else {
