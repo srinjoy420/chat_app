@@ -15,11 +15,16 @@ import {
 const Loginpage = () => {
   const [formData, setFormData] = useState({ username: "", email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const { authUser, isLoading, Login, isLoggingIn } = useAuthstore()
+  const { authUser, isLoading, login, isLoggingIn } = useAuthstore()
   const navigate = useNavigate();
 
-  const handelSubmit = (e) => {
+  const handelSubmit =async(e) => {
     e.preventDefault()
+    const result = await login(formData);
+    if (result.success) {
+      navigate("/");
+    }
+
   }
   return (
     <div className="w-full flex items-center justify-center p-4 bg-slate-900">
