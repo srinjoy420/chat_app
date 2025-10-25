@@ -7,6 +7,7 @@ export const useAuthstore = create((set, get) => ({
   isCheckingAuth: true,
   isSigningUp: false,
   isLoggingIn: false,
+  isUpdatingProfilepic:false,
   error: null,
 
   // Clear error
@@ -113,6 +114,8 @@ export const useAuthstore = create((set, get) => ({
 
   // Update profile picture
   updateProfilePic: async (profilepic) => {
+    set({ isUpdatingProfilepic: true, error: null });
+    
     try {
       const res = await axiosInstance.put("/api/v1/auth/updatepic", { profilepic });
       
@@ -121,20 +124,27 @@ export const useAuthstore = create((set, get) => ({
           authUser: {
             ...state.authUser,
             profilepic: res.data.profilepic
-          }
+          },
+          error: null
         }));
+        toast.success("Profile picture uploaded successfully");
         console.log("✅ Profile picture updated successfully");
         return { success: true, profilepic: res.data.profilepic };
       } else {
-        set({ error: res.data.message });
+        set({ error: res.data.message, isUpdatingProfilepic: false });
+        toast.error(res.data.message);
         return { success: false, error: res.data.message };
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Profile picture update failed";
-      set({ error: errorMessage });
+      set({ error: errorMessage, isUpdatingProfilepic: false });
       console.log("❌ Profile picture update failed:", errorMessage);
+      toast.error(errorMessage);
       return { success: false, error: errorMessage };
+    } finally {
+      set({ isUpdatingProfilepic: false });
     }
+    
   },
 
   // Delete account
