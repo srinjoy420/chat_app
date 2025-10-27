@@ -8,7 +8,8 @@ import {ChatContainer} from "../components/ChatContainer"
 import ProfileHeader from "../components/ProfileHeader"
 import ChatList from "../components/ChatList"
 import ContactList from "../components/ContactList"
-import NoconverSactionPlaceHolder from "../components/NoconverSactionPlaceHolder"
+
+import NoConversationPlaceholder from '../components/NoconverSactionPlaceHolder'
 
 const Chatpage = () => {
   const {logout}=useAuthstore()
@@ -30,7 +31,7 @@ const Chatpage = () => {
         </div>
         {/* right side  */}
         <div className='flex-1 flex flex-col bg-slate-900/5 backdrop-blur-sm'>
-            {selectedUser ? <ChatContainer/> :<NoconverSactionPlaceHolder/>}
+            {selectedUser ? <ChatContainer/> :<NoConversationPlaceholder/>}
         </div>
       </BorderAnimatedContainer>
      

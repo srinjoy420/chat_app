@@ -15,6 +15,7 @@ export const messageSidebar = AsyncHandeler(async (req, res) => {
     }
     res.status(200).json({
         message: "Useres found succesfully",
+        success: true,
         users
     })
 })
@@ -41,7 +42,7 @@ export const SendMessage = AsyncHandeler(async (req, res) => {
     }
     const { id: reciverId } = req.params
     const senderId = req.user._id
-    if (senderId.equals(reciverId)) {
+    if (senderId === reciverId) {
         return res.status(400).json({
             message: "you cant send message to yourself",
             success: false

@@ -120,6 +120,8 @@ export const useChatStore = create((set, get) => ({
   // Clear messages
   clearMessages: () => set({ messages: [] }),
 
+  
+
   // Reset store
   resetStore: () =>
     set({
