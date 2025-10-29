@@ -81,10 +81,13 @@ export const useChatStore = create((set, get) => ({
       }
     } catch (error) {
       set({
+       
         error:
           error.response?.data?.message || "Failed to fetch messages",
         isMessagesLoading: false,
+       
       });
+      toast.error(error.response?.data?.message || "Failed to fetch messages");
     }
   },
 
