@@ -30,6 +30,7 @@ export const getmessages = AsyncHandeler(async (req, res) => {
     })
     res.status(200).json({
         message: "find all messages succesfully",
+        success: true,
         messages
     })
 })
@@ -70,6 +71,7 @@ export const SendMessage = AsyncHandeler(async (req, res) => {
     // todo:realtime funcanility ges here =>socket.io
     res.status(200).json({
         message: "succefully sned message",
+        success: true,
         newMessage
     })
 
