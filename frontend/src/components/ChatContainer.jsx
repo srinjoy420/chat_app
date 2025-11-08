@@ -3,25 +3,52 @@ import { useChatStore } from '../store/useChatStore'
 import { useAuthstore } from '../store/useauthstore'
 import ChatHader from './ChatHader'
 import NoChatHistoryPlaceholder from './NoChatHistoryPlaceHolder'
+import MessaGeInput from './MessaGeInput'
+import MessagesLoadingSkeleton from './MessageLoadingscleTon'
 
 
 export const ChatContainer = () => {
-  const {setSelectedUser,getMessages,messages,selectedUser}=useChatStore()
+  const {getMessages,messages,selectedUser,isMessagesLoading}=useChatStore()
   const {authUser}=useAuthstore()
   useEffect(()=>{
+    if (!selectedUser?._id) return;
     getMessages(selectedUser._id)
-  },[selectedUser,getMessages])
+  },[selectedUser?._id,getMessages])
   return (
     <>
       <ChatHader/>
       <div className='flex-1 px-6 overflow-y-auto py-8'>
-       {messages.length > 0 ? (
-        <p>some messages</p>
-       ) : (
+       {selectedUser && messages.length > 0 && !isMessagesLoading ? (
+         <div className='max-w-3xl mx-auto space-y-6'>
+           {messages.map(msg=>(
+            <div key={msg._id}
+            className={`chat ${String(msg.senderId)===String(authUser?._id) ? "chat-end":"chat-start"}`}>
+               <div className={
+                `chat-bubble relative  ${
+                String(msg.senderId)===String(authUser?._id)
+                 ? "bg-cyan-600 text-white":"bg-slate-800 text-slate-200"}`
+               }>
+                 {msg.image &&(
+                  <img src={msg.image} alt='shared' className='rounded-lg h-48 object-cover'/>
+                 )}
+                 {msg.text && <p className='mt-2'>{msg.text}</p>}
+                 {/* the date of the message */}
+                 <p className='text-xs mt-1 opacity-75 flex items-center gap-1'>
+                    {new Date(msg.createdAt).toISOString().slice(11,15)}                    
+                 </p>
+
+               </div>
+
+            </div>
+           ))}
+
+         </div>
+       ) : isMessagesLoading ? ( <MessagesLoadingSkeleton/>) : selectedUser ? (
         <NoChatHistoryPlaceholder name={selectedUser.username}/>
-       ) }
+       ) : null }
 
       </div>
+      <MessaGeInput/>
     </>
   )
 }

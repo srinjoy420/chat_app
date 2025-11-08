@@ -27,7 +27,7 @@ export const getmessages = AsyncHandeler(async (req, res) => {
             { senderId: myId, reciverId: userToChatId },
             { senderId: userToChatId, reciverId: myId }
         ]
-    })
+    }).sort({ createdAt: 1 })
     res.status(200).json({
         message: "find all messages succesfully",
         success: true,
@@ -37,13 +37,13 @@ export const getmessages = AsyncHandeler(async (req, res) => {
 export const SendMessage = AsyncHandeler(async (req, res) => {
     const { text, image } = req.body
     if (!text && !image) {
-        return res.status(404).json({
+        return res.status(400).json({
             message: "please provide image or text"
         })
     }
     const { id: reciverId } = req.params
     const senderId = req.user._id
-    if (senderId === reciverId) {
+    if (senderId?.toString() === reciverId?.toString()) {
         return res.status(400).json({
             message: "you cant send message to yourself",
             success: false
@@ -69,7 +69,7 @@ export const SendMessage = AsyncHandeler(async (req, res) => {
     })
     await newMessage.save()
     // todo:realtime funcanility ges here =>socket.io
-    res.status(200).json({
+    res.status(201).json({
         message: "succefully sned message",
         success: true,
         newMessage
