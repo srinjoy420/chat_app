@@ -92,28 +92,48 @@ export const useChatStore = create((set, get) => ({
   },
 
   // Send message
-  sendMessage: async (receiverId, messageData) => {
-    set({ error: null });
+  // sendMessage: async (receiverId, messageData) => {
+  //   set({ error: null });
+  //   try {
+  //     const res = await axiosInstance.post(
+  //       `/api/v1/message/send/${receiverId}`,
+  //       messageData
+  //     );
+  //     if (res.data.success) {
+  //       const newMessage = res.data.newMessage;
+  //       set((state) => ({
+  //         messages: [...state.messages, newMessage],
+  //       }));
+  //       return { success: true, message: newMessage };
+  //     } else {
+  //       set({ error: res.data.message });
+  //       return { success: false, error: res.data.message };
+  //     }
+  //   } catch (error) {
+  //     const errorMessage =
+  //       error.response?.data?.message || "Failed to send message";
+  //     set({ error: errorMessage });
+  //     return { success: false, error: errorMessage };
+  //   }
+  // },
+  sendMessage:async(messageData)=>{
+    const {selectedUser,messages}=get()
+    if (!selectedUser?._id) {
+      toast.error("Please select a user to send message")
+      return
+    }
     try {
-      const res = await axiosInstance.post(
-        `/api/v1/message/send/${receiverId}`,
-        messageData
-      );
-      if (res.data.success) {
-        const newMessage = res.data.newMessage;
+      const res=await axiosInstance.post(`/api/v1/message/send/${selectedUser._id}`,messageData)
+      if (res.data.success && res.data.newMessage) {
         set((state) => ({
-          messages: [...state.messages, newMessage],
-        }));
-        return { success: true, message: newMessage };
+          messages: [...state.messages, res.data.newMessage]
+        }))
       } else {
-        set({ error: res.data.message });
-        return { success: false, error: res.data.message };
+        toast.error(res.data.message || "Failed to send message")
       }
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Failed to send message";
-      set({ error: errorMessage });
-      return { success: false, error: errorMessage };
+      toast.error(error.response?.data?.message || "something went wrong")
+      
     }
   },
 
