@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react'
 import useKeyBoardSound from '../hooks/useKeyboardsound'
 import { useChatStore } from '../store/useChatStore'
 import toast from 'react-hot-toast'
-import { ImageIcon, XIcon } from 'lucide-react'
+import { ImageIcon, SendIcon, XIcon } from 'lucide-react'
 
 const MessaGeInput = () => {
   const { playRandomKeystrokeSound } = useKeyBoardSound()
@@ -109,7 +109,7 @@ const MessaGeInput = () => {
           disabled={isDisabled}
           className='bg-cyan-600 hover:bg-cyan-700 disabled:bg-cyan-600/50 disabled:cursor-not-allowed text-white rounded-lg px-6 py-2 transition-colors'
         >
-          Send
+          <SendIcon className='w-5 h-5'/>
         </button>
 
       </form>

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import { useAuthstore } from "./useauthstore";
 
 export const useChatStore = create((set, get) => ({
   allContacts: [],
@@ -116,24 +117,53 @@ export const useChatStore = create((set, get) => ({
   //     return { success: false, error: errorMessage };
   //   }
   // },
-  sendMessage:async(messageData)=>{
-    const {selectedUser,messages}=get()
+  sendMessage: async (messageData) => {
+    const { selectedUser, messages } = get()
+    const { authUser } = useAuthstore.getState()
+    
     if (!selectedUser?._id) {
       toast.error("Please select a user to send message")
       return
     }
+
+    const tempId = `temp-${Date.now()}`
+    const optimisticMessage = {
+      _id: tempId,
+      senderId: authUser._id,
+      reciverId: selectedUser._id,
+      text: messageData.text,
+      image: messageData.image,
+      createdAt: new Date().toISOString(),
+      isSending: true
+    }
+    
+    // Immediately add the message to UI (optimistic update)
+    set((state) => ({
+      messages: [...state.messages, optimisticMessage]
+    }))
+
     try {
-      const res=await axiosInstance.post(`/api/v1/message/send/${selectedUser._id}`,messageData)
+      const res = await axiosInstance.post(`/api/v1/message/send/${selectedUser._id}`, messageData)
       if (res.data.success && res.data.newMessage) {
+        // Replace the optimistic message with the real one from server
         set((state) => ({
-          messages: [...state.messages, res.data.newMessage]
+          messages: state.messages.map(msg => 
+            msg._id === tempId ? res.data.newMessage : msg
+          )
         }))
       } else {
+        // Remove optimistic message on failure
+        set((state) => ({
+          messages: state.messages.filter(msg => msg._id !== tempId)
+        }))
         toast.error(res.data.message || "Failed to send message")
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "something went wrong")
-      
+      // Remove optimistic message on error
+      set((state) => ({
+        messages: state.messages.filter(msg => msg._id !== tempId)
+      }))
+      toast.error(error.response?.data?.message || "Something went wrong")
     }
   },
 

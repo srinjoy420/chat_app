@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useChatStore } from '../store/useChatStore'
 import { useAuthstore } from '../store/useauthstore'
 import ChatHader from './ChatHader'
@@ -10,6 +10,7 @@ import MessagesLoadingSkeleton from './MessageLoadingscleTon'
 export const ChatContainer = () => {
   const {getMessages,messages,selectedUser,isMessagesLoading}=useChatStore()
   const {authUser}=useAuthstore()
+  const messageendRef=useRef(null)
   
   // Helper function to normalize IDs for comparison
   const normalizeId = (id) => {
@@ -26,6 +27,11 @@ export const ChatContainer = () => {
     if (!selectedUser?._id) return;
     getMessages(selectedUser._id)
   },[selectedUser?._id,getMessages])
+  useEffect(()=>{
+    if(messageendRef.current){
+      messageendRef.current.scrollIntoView({behavior:"smooth"})
+    }
+  },[messages])
   return (
     <>
       <ChatHader/>
@@ -56,6 +62,10 @@ export const ChatContainer = () => {
               </div>
              )
            })}
+           {/* the scroll to the bottom */}
+           <div ref={messageendRef}/>
+
+           
 
          </div>
        ) : isMessagesLoading ? ( <MessagesLoadingSkeleton/>) : selectedUser ? (
