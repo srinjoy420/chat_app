@@ -34,7 +34,7 @@ export const getmessages = AsyncHandeler(async (req, res) => {
         messages
     })
 })
-export const SendMessage = AsyncHandeler(async (req, res) => {
+export const SendMessage = AsyncHandeler(async (req, res) => { 
     const { text, image } = req.body
     if (!text && !image) {
         return res.status(400).json({
