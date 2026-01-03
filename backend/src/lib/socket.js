@@ -24,4 +24,23 @@ const io = new Server(server, {
 
 io.use(socketAuthMiddleWare)
 
-const usersocketMap={}
+const usersocketMap={}; //{userId:socket.ID} key value
+// handel online and offline users
+io.on("connection",(socket)=>{
+    console.log("A user connected",socket.user.username);
+    const userId=socket.userId
+    usersocketMap[userId]=socket.id
+    // io.emit use too send events to all connected clients
+    io.emit("getOnlineUsers",Object.keys(usersocketMap))
+
+    socket.on("disconnect",()=>{
+        console.log("A user disconnected",socket.user.username);
+        delete usersocketMap[userId]
+        // inform all the clients a user has disconnected
+        io.emit("getOnlineUsers",Object.keys(usersocketMap))
+
+
+
+    })
+    
+})

@@ -7,65 +7,46 @@ dotenv.config()
 export const socketAuthMiddleWare = async (socket, next) => {
     try {
         // Extract token from cookies
-        const cookies = socket.handshake.headers.cookie || ""
+        const token = socket.handshake.headers.cookie 
+                     ?.split("; ")
+                     .find((row)=>row.startsWith("accessToken"))
+                     ?.split("=")[1];
+        console.log(token);
         
-        // Parse cookies string into an object for easier access
-        const cookiesObj = {}
-        cookies.split(";").forEach(cookie => {
-            const [key, ...valueParts] = cookie.trim().split("=")
-            if (key && valueParts.length > 0) {
-                cookiesObj[key] = valueParts.join("=") // Rejoin in case value contains "="
-            }
-        })
-
-        const token = cookiesObj.accessToken
-
-        if (!token) {
-            console.log("❌ Socket authentication failed: No access token found")
-            console.log("📄 Available cookies:", Object.keys(cookiesObj))
-            return next(new Error("Authentication required - No token found"))
+        
+        if(!token){
+            console.log("socket connection rejected no token peovided");
+            return next(new Error("unauthorized-No token provided"))
+            
         }
-
-        // Verify the token
-        const decoded = jwt.verify(token, process.env.TOKEN_SECRET)
-
-        // Find user in database
-        const user = await User.findById(decoded._id).select("-password -refreshToken")
-
-        if (!user) {
-            console.log("❌ Socket authentication failed: User not found")
-            return next(new Error("Authentication failed - User not found"))
+        // verify the token
+        const decode=jwt.verify(token,process.env.TOKEN_SECRET)
+        if(!decode){
+            console.log("socket connection rejected unable tokaen");
+            return next(new Error("unauthorized-invalid token"))
+            
         }
-
-        // Attach user info to socket (similar to req.user in HTTP middleware)
-        // socket.user = {
-        //     _id: user._id,
-        //     username: user.username,
-        //     email: user.email,
-        //     profilepic: user.profilepic
-        // }
+        // find the user
+        const user=await User.findById(decode._id).select("-password")
+        if(!user){
+            console.log("User not found");
+              return next(new Error("User not found"))
+            
+        }
         // attach user info to socket
         socket.user=user
-        socket.userId=user.id.toString()
+        socket.userId=user._id.toString()
+        console.log(`socket authenticated for the user ${user.username} and ${user._id}`);
+        
 
-        console.log("✅ Socket authenticated successfully for user:", user._id)
-
-        // Call next() to allow the connection
         next()
+        
+        
 
     } catch (error) {
-        console.log("❌ Socket authentication middleware error:", error.message)
-
-        // Handle specific JWT errors
-        if (error.name === 'TokenExpiredError') {
-            return next(new Error("Token expired - Please login again"))
-        }
-
-        if (error.name === 'JsonWebTokenError') {
-            return next(new Error("Invalid token - Please login again"))
-        }
-
-        // Generic error
-        return next(new Error("Authentication failed"))
+        console.log("error in socket authentication",error.message);
+        next(new Error("Unauthorized - Authentication failed"))
+        
+       
     }
 }
