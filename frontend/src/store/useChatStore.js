@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { useAuthstore } from "./useauthstore";
+ const notiFicationSound=new Audio("/sounds/notification.mp3")
 
 export const useChatStore = create((set, get) => ({
   allContacts: [],
@@ -129,7 +130,7 @@ export const useChatStore = create((set, get) => ({
     const tempId = `temp-${Date.now()}`
     const optimisticMessage = {
       _id: tempId,
-      senderId: authUser._id,
+      senderId: authUser.id || authUser._id, // Backend returns 'id' not '_id'
       reciverId: selectedUser._id,
       text: messageData.text,
       image: messageData.image,
@@ -146,11 +147,30 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.post(`/api/v1/message/send/${selectedUser._id}`, messageData)
       if (res.data.success && res.data.newMessage) {
         // Replace the optimistic message with the real one from server
-        set((state) => ({
-          messages: state.messages.map(msg => 
-            msg._id === tempId ? res.data.newMessage : msg
-          )
-        }))
+        // But first check if socket already added it
+        set((state) => {
+          const realMessageId = res.data.newMessage._id?.toString()
+          
+          // Check if real message already exists (socket might have added it)
+          const alreadyExists = state.messages.some(msg => {
+            const msgId = msg._id?.toString()
+            return msgId === realMessageId && msgId !== tempId
+          })
+          
+          if(alreadyExists) {
+            // Socket already added it, just remove the optimistic one
+            return {
+              messages: state.messages.filter(msg => msg._id !== tempId)
+            }
+          } else {
+            // Replace optimistic with real message
+            return {
+              messages: state.messages.map(msg => 
+                msg._id === tempId ? res.data.newMessage : msg
+              )
+            }
+          }
+        })
       } else {
         // Remove optimistic message on failure
         set((state) => ({
@@ -166,6 +186,91 @@ export const useChatStore = create((set, get) => ({
       toast.error(error.response?.data?.message || "Something went wrong")
     }
   },
+
+  subscribeMessages:()=>{
+    const {selectedUser,isSoundEnabled}=get()
+    if(!selectedUser) return;
+    const socket=useAuthstore.getState().socket;
+    if(!socket) return;
+    
+    // Remove any existing listeners first to prevent duplicates
+    socket.off("newMessage")
+    
+    const handleNewMessage = (newMessage)=>{
+      // Use get() to get latest state every time
+      const state = get()
+      const currentSelectedUser = state.selectedUser
+      const currentMessages = state.messages
+      
+      // Only add message if it's for the currently selected user
+      if(!currentSelectedUser || !newMessage) return;
+      
+      const {authUser} = useAuthstore.getState()
+      
+      // Normalize IDs for comparison
+      const normalizeId = (id) => {
+        if (!id) return null
+        if (typeof id === 'object' && id.toString) return id.toString()
+        return String(id).trim()
+      }
+      
+      const newSenderId = normalizeId(newMessage.senderId)
+      const newReceiverId = normalizeId(newMessage.reciverId)
+      const currentUserId = normalizeId(currentSelectedUser._id)
+      const authUserId = normalizeId(authUser?.id || authUser?._id) // Backend returns 'id' not '_id'
+      const newMessageId = normalizeId(newMessage._id)
+      
+      // Check if message is for current chat
+      const isForCurrentChat = (
+        newSenderId === currentUserId || 
+        newReceiverId === currentUserId
+      )
+      
+      if(!isForCurrentChat) return
+      
+      // Check if message already exists using latest state
+      const messageExists = currentMessages.some(msg => {
+        const msgId = normalizeId(msg._id)
+        // Exact ID match - this is the primary check
+        return msgId && newMessageId && msgId === newMessageId
+      })
+      
+      if(!messageExists){
+        // Use functional update to ensure we're working with latest state
+        set((state) => {
+          // Double-check again with latest state
+          const latestMessages = state.messages
+          const stillExists = latestMessages.some(msg => {
+            const msgId = normalizeId(msg._id)
+            return msgId && newMessageId && msgId === newMessageId
+          })
+          
+          if(stillExists) {
+            return state // Don't update if it exists
+          }
+          
+          return {
+            messages: [...latestMessages, newMessage]
+          }
+        })
+        
+        // Play notification sound if enabled and message is not from current user
+        if(isSoundEnabled && newSenderId !== authUserId){
+          notiFicationSound.currentTime = 0
+          notiFicationSound.play().catch(err => console.log("Audio play failed:", err))
+        }
+      }
+    }
+    
+    socket.on("newMessage", handleNewMessage)
+  },
+
+  unsubcribeMessages:()=>{
+    const socket=useAuthstore.getState().socket;
+    if(!socket) return;
+    socket.off("newMessage")
+  },
+
 
   // Clear error
   clearError: () => set({ error: null }),

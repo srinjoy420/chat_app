@@ -1,6 +1,9 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
+import {io} from "socket.io-client"
+
+const BASE_URL="http://localhost:3000"
 
 export const useAuthstore = create((set, get) => ({
   authUser: null,
@@ -9,6 +12,8 @@ export const useAuthstore = create((set, get) => ({
   isLoggingIn: false,
   isUpdatingProfilepic:false,
   error: null,
+  socket:null,
+  onlineUsers:[],
 
   // Clear error
   clearError: () => set({ error: null }),
@@ -25,6 +30,7 @@ export const useAuthstore = create((set, get) => ({
           authUser: res.data.user,
           error: null 
         });
+        get().connectSocket()
         console.log("✅ User authenticated:", res.data.user.username);
       } else {
         set({ authUser: null });
@@ -53,6 +59,7 @@ export const useAuthstore = create((set, get) => ({
           error: null 
         });
         toast.success("account created succesfully")
+        get().connectSocket()
         console.log("✅ User signed up successfully:", res.data.user.username);
         return { success: true, user: res.data.user };
       } else {
@@ -83,6 +90,7 @@ export const useAuthstore = create((set, get) => ({
           error: null 
         });
         toast.success("logged in succesfully")
+        get().connectSocket()
         console.log("✅ User logged in successfully:", res.data.user.username);
         return { success: true, user: res.data.user };
       } else {
@@ -104,6 +112,8 @@ export const useAuthstore = create((set, get) => ({
     try {
       await axiosInstance.get("/api/v1/auth/logout");
       set({ authUser: null, error: null });
+      toast.success("Loggedout succesfully")
+      get().disconnectSocket()
       console.log("✅ User logged out successfully");
     } catch (error) {
       console.log("❌ Logout error:", error.response?.data?.message || error.message);
@@ -166,5 +176,27 @@ export const useAuthstore = create((set, get) => ({
       console.log("❌ Account deletion failed:", errorMessage);
       return { success: false, error: errorMessage };
     }
+  },
+
+  connectSocket:()=>{
+    const {authUser}=get()
+    if(!authUser || get().socket?.connected) return
+
+    const socket=io(BASE_URL,{withCredentials:true})//this ensure cookies are sent to connection
+    socket.connect()
+    set({socket})
+
+    //listen for online user
+    socket.on("getOnlineUsers",(userIds)=>{
+      // Ensure all IDs are strings for consistent comparison
+      const normalizedIds = Array.isArray(userIds) 
+        ? userIds.map(id => String(id))
+        : []
+      set({onlineUsers: normalizedIds})
+    })
+
+  },
+  disconnectSocket:()=>{
+    if(get().socket?.connected) get().socket.disconnect()
   }
 }));

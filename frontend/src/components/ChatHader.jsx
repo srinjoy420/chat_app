@@ -1,9 +1,13 @@
 import React, { useEffect } from 'react'
 import { useChatStore } from '../store/useChatStore'
 import { XIcon } from 'lucide-react'
+import { useAuthstore } from '../store/useauthstore'
 
 const ChatHader = () => {
     const { selectedUser, setSelectedUser } = useChatStore()
+    const{ onlineUsers }=useAuthstore()
+    //we check the selected user is on the onlineuserarray
+    const isOnline=onlineUsers.includes(selectedUser._id)
     useEffect(()=>{
         const handleEscKey=event=>{
             if(event.key==="Escape") setSelectedUser(null)
@@ -18,7 +22,7 @@ const ChatHader = () => {
    border-slate-700/50 max-h-[84px] px-6 flex-1'>
             <div className="flex items-center space-x-3">
                 {/* Avatar */}
-                <div className="avatar avatar-online">
+                <div className={`avatar ${isOnline ? "avatar-online" : "avatar-offline"}`}>
                     <div className="w-12 rounded-full overflow-hidden ring-2 ring-cyan-500/30">
                         <img
                             src={selectedUser.profilepic || "/avatar.png"}
@@ -33,7 +37,7 @@ const ChatHader = () => {
                     <h3 className="text-white font-medium text-base">
                         {selectedUser.username || "Loading..."}
                     </h3>
-                    <p className="text-cyan-400 text-sm">Online</p>
+                    <p className="text-cyan-400 text-sm">{isOnline ? "online" : "offline"}</p>
                 </div>
             </div>
             <button onClick={()=>setSelectedUser(null)}>

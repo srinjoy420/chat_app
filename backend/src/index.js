@@ -4,15 +4,16 @@ import ConnectDB from "./db/indexdb.js"
 import cookieParser from "cookie-parser"
 import authUser from "./routes/auth.routes.js"
 import messageRouter from "./routes/message.routes.js"
-import path from "path"
-import { fileURLToPath } from "url"
+
 import cors from "cors"
+import {app} from "./lib/socket.js"
+import { server } from "./lib/socket.js"
 
 // Fix __dirname for ESM
 
 
 dotenv.config()
-const app = express()
+
 
 app.use(
   cors({
@@ -47,6 +48,6 @@ app.use("/api/v1/message", messageRouter)
 
 const port = process.env.PORT || 3000
 ConnectDB()
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`✅ App is running on port ${port}`)
 })

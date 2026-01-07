@@ -2,9 +2,17 @@ import React, { useEffect } from 'react'
 import { useChatStore } from '../store/useChatStore'
 import UsersLoadingSkeleton from './UserLoadingScalitan'
 import NoChatsFound from './NoChatsFound'
+import { useAuthstore } from '../store/useauthstore'
 
 const ChatList = () => {
   const { getMychatPartners, chats, isUsersLoading, setSelectedUser } = useChatStore()
+  const {onlineUsers}=useAuthstore()
+  
+  // Helper to check if user is online
+  const isUserOnline = (userId) => {
+    if (!userId || !Array.isArray(onlineUsers)) return false
+    return onlineUsers.includes(String(userId))
+  }
 
   useEffect(() => {
     getMychatPartners()
@@ -21,7 +29,7 @@ const ChatList = () => {
             onClick={() => setSelectedUser(chat)}>
             <div className="flex items-center gap-3">
             {/* we will make this using socket.io and make this realtime */}
-              <div className="avatar offline">
+              <div className={`avatar ${isUserOnline(chat._id) ? "avatar-online" : "avatar-offline"}`}>
                 <div className="size-12 rounded-full">
                   <img src={chat.profilepic || "/avatar.png"} alt={chat.username} />
                 </div>

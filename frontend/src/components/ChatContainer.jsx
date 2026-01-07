@@ -8,30 +8,51 @@ import MessagesLoadingSkeleton from './MessageLoadingscleTon'
 
 
 export const ChatContainer = () => {
-  const {getMessages,messages,selectedUser,isMessagesLoading}=useChatStore()
+  const {getMessages,messages,selectedUser,isMessagesLoading,subscribeMessages,unsubcribeMessages}=useChatStore()
   const {authUser}=useAuthstore()
   const messageendRef=useRef(null)
   
   // Helper function to normalize IDs for comparison
   const normalizeId = (id) => {
     if (!id) return null
+    // Handle ObjectId objects, strings, or objects with toString method
+    if (typeof id === 'object' && id.toString) {
+      return String(id.toString()).trim()
+    }
     return String(id).trim()
   }
   
-  const isMyMessage = (msgSenderId) => {
-    if (!authUser?.id || !msgSenderId) return false
-    return normalizeId(msgSenderId) === normalizeId(authUser.id)
+  const isMyMessage = (msg) => {
+    // Early returns for missing data
+    // Backend returns 'id' not '_id' for authUser
+    const authUserId = authUser?.id || authUser?._id
+    if (!authUser || !authUserId || !msg || !msg.senderId) {
+      return false
+    }
+    
+    // Use the normalizeId helper function
+    const msgSenderIdNormalized = normalizeId(msg.senderId)
+    const authUserIdNormalized = normalizeId(authUserId)
+    
+    // Strict comparison
+    return msgSenderIdNormalized === authUserIdNormalized
   }
 
   useEffect(()=>{
     if (!selectedUser?._id) return;
     getMessages(selectedUser._id)
-  },[selectedUser?._id,getMessages])
+    subscribeMessages()
+
+    //cleanup
+    return ()=>unsubcribeMessages()
+  },[selectedUser?._id,getMessages,subscribeMessages,unsubcribeMessages])
   useEffect(()=>{
     if(messageendRef.current){
       messageendRef.current.scrollIntoView({behavior:"smooth"})
     }
   },[messages])
+
+
   return (
     <>
       <ChatHader/>
@@ -39,7 +60,7 @@ export const ChatContainer = () => {
        {selectedUser && messages.length > 0 && !isMessagesLoading ? (
          <div className='max-w-3xl mx-auto space-y-6'>
            {messages.map(msg=>{
-             const myMessage = isMyMessage(msg.senderId)
+             const myMessage = isMyMessage(msg)
              return (
               <div key={msg._id}
               className={`chat ${myMessage ? "chat-end":"chat-start"}`}>

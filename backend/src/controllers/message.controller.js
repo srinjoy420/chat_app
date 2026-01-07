@@ -3,6 +3,7 @@ import Message from "../model/Message.model.js";
 import User from "../model/User.model.js";
 
 import { AsyncHandeler } from "../utils/AsyncHandeler.js"
+import {getReciveersockedId, io} from "../lib/socket.js"
 
 export const messageSidebar = AsyncHandeler(async (req, res) => {
     const loggedinuser = req.user._id
@@ -27,11 +28,20 @@ export const getmessages = AsyncHandeler(async (req, res) => {
             { senderId: myId, reciverId: userToChatId },
             { senderId: userToChatId, reciverId: myId }
         ]
-    }).sort({ createdAt: 1 })
+    }).sort({ createdAt: 1 }).lean()
+    
+    // Ensure IDs are serialized as strings
+    const serializedMessages = messages.map(msg => ({
+        ...msg,
+        senderId: msg.senderId.toString(),
+        reciverId: msg.reciverId.toString(),
+        _id: msg._id.toString()
+    }))
+    
     res.status(200).json({
         message: "find all messages succesfully",
         success: true,
-        messages
+        messages: serializedMessages
     })
 })
 export const SendMessage = AsyncHandeler(async (req, res) => { 
@@ -68,13 +78,27 @@ export const SendMessage = AsyncHandeler(async (req, res) => {
         image: imageurl || null
     })
     await newMessage.save()
-    // todo:realtime funcanility ges here =>socket.io
+
+    // Serialize the message for BOTH socket AND response
+    const serializedMessage = {
+        ...newMessage.toObject(),
+        senderId: newMessage.senderId.toString(),
+        reciverId: newMessage.reciverId.toString(),
+        _id: newMessage._id.toString()
+    }
+
+    const reciversocketId = getReciveersockedId(reciverId.toString())
+    
+    if(reciversocketId){
+        io.to(reciversocketId).emit("newMessage", serializedMessage)
+    }
+    
+    // ✅ Return serialized message instead of raw newMessage
     res.status(201).json({
         message: "succefully sned message",
         success: true,
-        newMessage
+        newMessage: serializedMessage  // ← Changed this line
     })
-
 })
 export const getChatPartners = AsyncHandeler(async (req, res) => {
     const loggedinUserId = req.user._id

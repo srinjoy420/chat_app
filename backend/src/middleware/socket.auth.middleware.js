@@ -11,7 +11,7 @@ export const socketAuthMiddleWare = async (socket, next) => {
                      ?.split("; ")
                      .find((row)=>row.startsWith("accessToken"))
                      ?.split("=")[1];
-        console.log(token);
+        // console.log(token);
         
         
         if(!token){

@@ -25,7 +25,12 @@ const io = new Server(server, {
 
 io.use(socketAuthMiddleWare)
 
-const usersocketMap={}; //{userId:socket.ID} key value
+// it will will use to check if user is online or offline
+export function getReciveersockedId(userId){
+    return usersocketMap[userId] || null
+}
+
+const usersocketMap={}; //{userId:socket.ID} key value store online useer
 // handel online and offline users
 io.on("connection",(socket)=>{
     console.log("A user connected",socket.user.username);
@@ -45,3 +50,5 @@ io.on("connection",(socket)=>{
     })
     
 })
+
+export {io,app,server}
