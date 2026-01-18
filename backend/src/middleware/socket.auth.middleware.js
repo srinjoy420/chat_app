@@ -6,7 +6,7 @@ dotenv.config()
 
 export const socketAuthMiddleWare = async (socket, next) => {
     try {
-        // Extract token from cookies
+        // Extract token from cookies from http only cookie
         const token = socket.handshake.headers.cookie 
                      ?.split("; ")
                      .find((row)=>row.startsWith("accessToken"))
