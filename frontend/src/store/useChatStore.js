@@ -119,7 +119,7 @@ export const useChatStore = create((set, get) => ({
   //   }
   // },
   sendMessage: async (messageData) => {
-    const { selectedUser, messages } = get()
+    const { selectedUser } = get()
     const { authUser } = useAuthstore.getState()
     
     if (!selectedUser?._id) {

@@ -6,7 +6,7 @@ import { useAuthstore } from '../store/useauthstore'
 
 
 const ContactList = () => {
-  const { getMychatPartners, chats, isUsersLoading, setSelectedUser,getallContacts,allContacts } = useChatStore()
+  const { isUsersLoading, setSelectedUser,getallContacts,allContacts } = useChatStore()
   const {onlineUsers}= useAuthstore()
   
   // Helper to check if user is online

@@ -15,7 +15,7 @@ import {
 const Loginpage = () => {
   const [formData, setFormData] = useState({ username: "", email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const { authUser, isLoading, login, isLoggingIn } = useAuthstore()
+  const { login, isLoggingIn } = useAuthstore()
   const navigate = useNavigate();
 
   const handelSubmit =async(e) => {

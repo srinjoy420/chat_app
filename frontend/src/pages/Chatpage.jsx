@@ -1,5 +1,4 @@
 import React from 'react'
-import { useAuthstore } from '../store/useauthstore'
 import BorderAnimatedContainer from "../components/BorderAnimatedContainer"
 import { useChatStore } from '../store/useChatStore'
 
@@ -12,7 +11,6 @@ import ContactList from "../components/ContactList"
 import NoConversationPlaceholder from '../components/NoconverSactionPlaceHolder'
 
 const Chatpage = () => {
-  const {logout}=useAuthstore()
   const {activeTab,selectedUser}=useChatStore()
   return (
     <div className="text-white  relative w-full max-w-6xl h-[800px]">
