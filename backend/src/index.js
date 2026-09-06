@@ -17,7 +17,7 @@ dotenv.config()
 
 app.use(
   cors({
-    origin: "http://localhost:5173",  // no trailing slash
+    origin: (process.env.CLIENT_URL || "http://localhost:5173").replace(/\/$/, ""),
     credentials: true,
     methods: ["GET", "POST", "DELETE", "OPTIONS", "PUT"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
@@ -47,7 +47,12 @@ app.use("/api/v1/message", messageRouter)
 
 
 const port = process.env.PORT || 3000
-ConnectDB()
-server.listen(port, () => {
-  console.log(`✅ App is running on port ${port}`)
-})
+
+const startServer = async () => {
+  await ConnectDB()
+  server.listen(port, () => {
+    console.log(`✅ App is running on port ${port}`)
+  })
+}
+
+startServer()
